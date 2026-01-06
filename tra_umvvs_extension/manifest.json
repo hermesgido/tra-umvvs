@@ -4,7 +4,23 @@
   "version": "1.0.0",
   "description": "Calculate motor vehicle taxes in Tanzania using TRA UMVVS endpoints.",
   "host_permissions": [
+    "https://www.beforward.jp/*",
+    "https://beforward.jp/*",
+    "https://*.beforward.jp/*",
     "https://taxpayerportal.tra.go.tz/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.beforward.jp/*",
+        "https://beforward.jp/*",
+        "https://*.beforward.jp/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
   ],
   "action": {
     "default_popup": "popup.html",

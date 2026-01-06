@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "BE FORWARD Car Scraper",
+  "version": "1.1",
+  "description": "Scrapes car data from BE FORWARD car detail pages.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.beforward.jp/*/id/*"],
+      "js": ["contentScript.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

@@ -1,5 +1,4 @@
 const makeEl = document.getElementById('make');
-const modelFilterEl = document.getElementById('modelFilter');
 const modelBodyEl = document.getElementById('modelBody');
 const yomEl = document.getElementById('yom');
 const countryEl = document.getElementById('country');
@@ -12,8 +11,6 @@ const resultEl = document.getElementById('result');
 const taxTableEl = document.getElementById('taxTable');
 const jsonOutEl = document.getElementById('jsonOut');
 
-let modelBodiesCache = [];
-
 function setStatus(text, isError = false) {
   statusEl.textContent = text;
   statusEl.className = isError ? 'status error' : 'status';
@@ -22,7 +19,6 @@ function setStatus(text, isError = false) {
 function setDisabled(disabled) {
   for (const el of [
     makeEl,
-    modelFilterEl,
     modelBodyEl,
     yomEl,
     countryEl,
@@ -86,28 +82,6 @@ function getMakeId() {
   return val ? Number(val) : null;
 }
 
-function getModelKey(modelBody) {
-  const parts = String(modelBody || '')
-    .split(' - ')
-    .map((x) => x.trim())
-    .filter(Boolean);
-  return parts.length ? parts[0] : String(modelBody || '').trim();
-}
-
-function uniqueSorted(values) {
-  const seen = new Set();
-  const out = [];
-  for (const v of values) {
-    const s = String(v || '').trim();
-    if (!s) continue;
-    if (seen.has(s)) continue;
-    seen.add(s);
-    out.push(s);
-  }
-  out.sort((a, b) => a.localeCompare(b));
-  return out;
-}
-
 async function loadMakes() {
   setStatus('Loading makes...');
   const data = await fetchJson('getMakes');
@@ -115,29 +89,14 @@ async function loadMakes() {
   setOptions(makeEl, items, 'Select make');
 }
 
-async function loadModelBodyFilterForMake() {
+async function loadModelBodiesForMake() {
   const makeId = getMakeId();
-  modelBodiesCache = [];
-  setPlaceholder(modelFilterEl, 'Select filter');
   setPlaceholder(modelBodyEl, 'Select model/body');
   if (!makeId) return;
   setStatus('Loading model/body options...');
   const data = await fetchJson('getModelBody', { makeId: String(makeId) });
-  modelBodiesCache = data.map((x) => x.modelBody).filter(Boolean);
-  const keys = uniqueSorted(modelBodiesCache.map(getModelKey));
-  const items = [{ value: 'ALL', label: 'ALL' }, ...keys.map((k) => ({ value: k, label: k }))];
-  setOptions(modelFilterEl, items, 'Select filter');
-}
-
-function populateModelBodiesFromFilter() {
-  setPlaceholder(modelBodyEl, 'Select model/body');
-  const selectedKey = modelFilterEl.value;
-  if (!selectedKey) return;
-  const filtered =
-    selectedKey === 'ALL'
-      ? modelBodiesCache
-      : modelBodiesCache.filter((x) => getModelKey(x) === selectedKey);
-  const items = filtered.map((v) => ({ value: v, label: v }));
+  const list = data.map((x) => x.modelBody).filter(Boolean);
+  const items = list.map((v) => ({ value: v, label: v }));
   setOptions(modelBodyEl, items, 'Select model/body');
 }
 
@@ -269,8 +228,6 @@ function clearResult() {
 }
 
 function resetDependents() {
-  modelBodiesCache = [];
-  setPlaceholder(modelFilterEl, 'Select filter');
   setPlaceholder(modelBodyEl, 'Select model/body');
   setPlaceholder(yomEl, 'Select year');
   setPlaceholder(countryEl, 'Select country');
@@ -325,25 +282,7 @@ makeEl.addEventListener('change', async () => {
     setDisabled(true);
     clearResult();
     resetDependents();
-    await loadModelBodyFilterForMake();
-    setStatus('Ready.');
-  } catch (e) {
-    setStatus(String(e && e.message ? e.message : e), true);
-  } finally {
-    setDisabled(false);
-  }
-});
-
-modelFilterEl.addEventListener('change', async () => {
-  try {
-    setDisabled(true);
-    clearResult();
-    setPlaceholder(modelBodyEl, 'Select model/body');
-    setPlaceholder(yomEl, 'Select year');
-    setPlaceholder(countryEl, 'Select country');
-    setPlaceholder(fuelEl, 'Select fuel');
-    setPlaceholder(engineEl, 'Select engine capacity');
-    populateModelBodiesFromFilter();
+    await loadModelBodiesForMake();
     setStatus('Ready.');
   } catch (e) {
     setStatus(String(e && e.message ? e.message : e), true);

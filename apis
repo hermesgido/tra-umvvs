@@ -12,3 +12,4 @@ https://taxpayerportal.tra.go.tz/umvvs-api/ExternalCalculator/getFuelType?makeId
 https://taxpayerportal.tra.go.tz/umvvs-api/ExternalCalculator/getEngineCapacity?makeId=1503191&modelBody=COROLLA%20FIELDER%20-%20NKE165%20-%20HYBRID%20-%20WAGON&yom=2015&countryOfOrigin=JAPAN&fuelType=PETROL%20%26%20ELECTRIC
 7. Get Vehicle Details
 https://taxpayerportal.tra.go.tz/umvvs-api/ExternalCalculator/getVehicleDetails?makeId=1503191&modelBody=COROLLA%20FIELDER%20-%20NKE165%20-%20HYBRID%20-%20WAGON&yom=2015&cuntryOfOrigin=JAPAN&fuelType=PETROL%20%26%20ELECTRIC&engineCapacity=1001%20-%201500%20CC
+

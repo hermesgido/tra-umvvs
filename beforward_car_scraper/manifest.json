@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "BE FORWARD + TRA Taxes",
+  "version": "1.1",
+  "description": "Scrape BE FORWARD car data and fetch TRA taxes",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://taxpayerportal.tra.go.tz/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.beforward.jp/*"],
+      "js": ["contentScript.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
+
