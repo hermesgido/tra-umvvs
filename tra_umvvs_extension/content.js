@@ -247,10 +247,93 @@ function setPanelStatus(text, isError = false) {
   el.style.color = isError ? '#b00020' : '#4a4a4a';
 }
 
-function renderVehicle(vehicle) {
+function renderSection(container, headingText, rows) {
+  const section = document.createElement('div');
+  section.style.marginTop = '10px';
+  section.style.border = '1px solid #eef1f7';
+  section.style.borderRadius = '10px';
+  section.style.overflow = 'hidden';
+
+  const heading = document.createElement('div');
+  heading.textContent = headingText;
+  heading.style.padding = '8px 10px';
+  heading.style.background = '#f6f7f9';
+  heading.style.fontWeight = '700';
+  heading.style.color = '#1a1a1a';
+  section.appendChild(heading);
+
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+
+  const tbody = document.createElement('tbody');
+  for (const [label, value] of rows) {
+    if (value == null || String(value).trim() === '') continue;
+    const tr = document.createElement('tr');
+
+    const td1 = document.createElement('td');
+    td1.textContent = label;
+    td1.style.padding = '6px 10px';
+    td1.style.borderBottom = '1px solid #eef1f7';
+    td1.style.color = '#4a4a4a';
+    td1.style.width = '52%';
+
+    const td2 = document.createElement('td');
+    td2.textContent = String(value);
+    td2.style.padding = '6px 10px';
+    td2.style.borderBottom = '1px solid #eef1f7';
+    td2.style.textAlign = 'right';
+    td2.style.fontWeight = '700';
+
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  section.appendChild(table);
+
+  container.appendChild(section);
+}
+
+function renderVehicle(vehicle, pageGuess, traMatch) {
   const container = document.getElementById('tra-umvvs-body');
   if (!container) return;
   container.innerHTML = '';
+
+  if (pageGuess) {
+    renderSection(container, 'From Beforward', [
+      ['Make', pageGuess.makeGuess],
+      ['Model/Body', pageGuess.modelGuess],
+      ['Year', pageGuess.year],
+      ['Fuel', pageGuess.fuelGuess],
+      ['Engine (cc)', pageGuess.engineCc],
+      ['Country', pageGuess.countryGuess],
+    ]);
+  }
+
+  if (traMatch) {
+    renderSection(container, 'Matched in TRA', [
+      ['Make', traMatch.makeName],
+      ['Make ID', traMatch.makeId],
+      ['Model/Body', traMatch.modelBody],
+      ['YOM', traMatch.yom],
+      ['Country', traMatch.countryOfOrigin],
+      ['Fuel', traMatch.fuelType],
+      ['Engine Capacity', traMatch.engineCapacity],
+    ]);
+  }
+
+  if (vehicle) {
+    renderSection(container, 'TRA Specs', [
+      ['Make', vehicle.make],
+      ['Model', vehicle.model],
+      ['Body Type', vehicle.bodyType],
+      ['YOM', vehicle.yom],
+      ['Country', vehicle.country],
+      ['Fuel', vehicle.fuelType],
+      ['Engine Capacity', vehicle.engineCapacity],
+    ]);
+  }
 
   const important = [
     ['totalImportTaxesInTZS', 'Total Import Taxes (TZS)'],
@@ -265,7 +348,10 @@ function renderVehicle(vehicle) {
   const table = document.createElement('table');
   table.style.width = '100%';
   table.style.borderCollapse = 'collapse';
-  table.style.marginTop = '8px';
+  table.style.marginTop = '10px';
+  table.style.border = '1px solid #eef1f7';
+  table.style.borderRadius = '10px';
+  table.style.overflow = 'hidden';
 
   const tbody = document.createElement('tbody');
 
@@ -274,12 +360,12 @@ function renderVehicle(vehicle) {
     const tr = document.createElement('tr');
     const td1 = document.createElement('td');
     td1.textContent = label;
-    td1.style.padding = '6px 0';
+    td1.style.padding = '6px 10px';
     td1.style.borderBottom = '1px solid #eef1f7';
     td1.style.color = '#4a4a4a';
     const td2 = document.createElement('td');
     td2.textContent = vehicle[key] == null ? '' : String(vehicle[key]);
-    td2.style.padding = '6px 0';
+    td2.style.padding = '6px 10px';
     td2.style.borderBottom = '1px solid #eef1f7';
     td2.style.textAlign = 'right';
     td2.style.fontWeight = key === 'totalTaxesInTZS' ? '800' : '700';
@@ -356,6 +442,8 @@ async function runAuto() {
   const guess = guessVehicleFromPage();
   setPanelStatus('Detecting vehicle and loading taxes...');
 
+  renderVehicle({}, guess, null);
+
   try {
     const makes = await fetchTra('getMakes');
     const makeNameWanted = guess.makeGuess || '';
@@ -402,6 +490,18 @@ async function runAuto() {
     });
     const engineCapacity = matchEngineCapacity(engineOptions, guess.engineCc);
 
+    const traMatch = {
+      makeName: makeObj.makeName,
+      makeId: String(makeObj.makeId),
+      modelBody,
+      yom: String(year),
+      countryOfOrigin,
+      fuelType,
+      engineCapacity,
+    };
+
+    renderVehicle({}, guess, traMatch);
+
     setPanelStatus('Calculating tax...');
     const details = await fetchTra('getVehicleDetails', {
       makeId: String(makeObj.makeId),
@@ -412,7 +512,7 @@ async function runAuto() {
       engineCapacity,
     });
     const vehicle = Array.isArray(details) ? details[0] : details;
-    renderVehicle(vehicle);
+    renderVehicle(vehicle, guess, traMatch);
     setPanelStatus('Done.');
   } catch (e) {
     setPanelStatus(String(e && e.message ? e.message : e), true);

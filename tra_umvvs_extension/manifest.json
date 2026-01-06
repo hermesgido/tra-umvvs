@@ -2,9 +2,12 @@
   "manifest_version": 3,
   "name": "TRA Vehicle Tax Calculator (UMVVS)",
   "version": "1.0.0",
-  "description": "Calculate motor vehicle taxes in Tanzania using TRA UMVVS endpoints.",
+  "description": "BE FORWARD car details and calculate motor vehicle import taxes in Tanzania using TRA UMVVS endpoints.",
   "permissions": [
-    "tabs"
+    "tabs",
+    "storage",
+    "activeTab",
+    "scripting"
   ],
   "host_permissions": [
     "https://www.beforward.jp/*",
@@ -19,15 +22,25 @@
         "https://beforward.jp/*",
         "https://*.beforward.jp/*"
       ],
-      "js": [
-        "content.js"
-      ],
+      "js": ["content.js"],
       "run_at": "document_idle"
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "TRA Vehicle Tax"
+    "default_title": "TRA Vehicle Tax",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   },
   "background": {
     "service_worker": "background.js",
