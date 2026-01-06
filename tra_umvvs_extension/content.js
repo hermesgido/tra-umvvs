@@ -253,13 +253,13 @@ function renderVehicle(vehicle) {
   container.innerHTML = '';
 
   const important = [
-    ['totalTaxesInTZS', 'Total Taxes (TZS)'],
     ['totalImportTaxesInTZS', 'Total Import Taxes (TZS)'],
     ['vehicleRegistrationFeeInTZS', 'Registration Fee (TZS)'],
     ['cifInUSD', 'CIF (USD)'],
     ['totalImportTaxesInUSD', 'Total Import Taxes (USD)'],
     ['year', 'TRA Year'],
     ['quarter', 'TRA Quarter'],
+    ['totalTaxesInTZS', 'Total Amount (TZS)'],
   ];
 
   const table = document.createElement('table');
@@ -282,7 +282,9 @@ function renderVehicle(vehicle) {
     td2.style.padding = '6px 0';
     td2.style.borderBottom = '1px solid #eef1f7';
     td2.style.textAlign = 'right';
-    td2.style.fontWeight = '700';
+    td2.style.fontWeight = key === 'totalTaxesInTZS' ? '800' : '700';
+    td2.style.fontSize = key === 'totalTaxesInTZS' ? '16px' : '12px';
+    td2.style.color = key === 'totalTaxesInTZS' ? '#0b5fff' : '#1a1a1a';
     tr.appendChild(td1);
     tr.appendChild(td2);
     tbody.appendChild(tr);
@@ -290,18 +292,6 @@ function renderVehicle(vehicle) {
 
   table.appendChild(tbody);
   container.appendChild(table);
-
-  const pre = document.createElement('pre');
-  pre.textContent = JSON.stringify(vehicle, null, 2);
-  pre.style.margin = '10px 0 0';
-  pre.style.padding = '10px';
-  pre.style.background = '#f6f7f9';
-  pre.style.borderRadius = '8px';
-  pre.style.overflow = 'auto';
-  pre.style.maxHeight = '260px';
-  pre.style.fontSize = '11px';
-  pre.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
-  container.appendChild(pre);
 }
 
 function fetchTra(path, params) {

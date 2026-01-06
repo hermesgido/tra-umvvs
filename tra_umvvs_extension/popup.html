@@ -71,6 +71,24 @@
         color: #5a5a5a;
         min-height: 14px;
       }
+      .total {
+        margin-top: 10px;
+        border: 1px solid #cfd6e4;
+        border-radius: 10px;
+        padding: 10px;
+        background: #f3f7ff;
+      }
+      .totalLabel {
+        font-size: 11px;
+        color: #4a4a4a;
+      }
+      .totalValue {
+        margin-top: 4px;
+        font-size: 18px;
+        font-weight: 800;
+        color: #0b5fff;
+        text-align: right;
+      }
       .error {
         color: #b00020;
       }
@@ -78,6 +96,12 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 10px;
+      }
+      .resultWrap {
+        max-height: 260px;
+        overflow: auto;
+        border: 1px solid #eef1f7;
+        border-radius: 10px;
       }
       th,
       td {
@@ -96,11 +120,6 @@
       .mono {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
           monospace;
-      }
-      textarea {
-        height: 140px;
-        resize: vertical;
-        margin-top: 8px;
       }
       @media (max-width: 460px) {
         body {
@@ -159,17 +178,22 @@
       <div id="status" class="status"></div>
 
       <div id="result" style="display:none;">
-        <table>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody id="taxTable"></tbody>
-        </table>
+        <div class="resultWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="taxTable"></tbody>
+          </table>
+        </div>
+      </div>
 
-        <textarea id="jsonOut" class="mono" readonly></textarea>
+      <div id="total" class="total" style="display:none;">
+        <div class="totalLabel">Total Amount (TZS)</div>
+        <div id="totalValue" class="totalValue"></div>
       </div>
     </div>
 

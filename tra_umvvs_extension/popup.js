@@ -7,9 +7,10 @@ const engineEl = document.getElementById('engine');
 const calculateEl = document.getElementById('calculate');
 const resetEl = document.getElementById('reset');
 const statusEl = document.getElementById('status');
+const totalEl = document.getElementById('total');
+const totalValueEl = document.getElementById('totalValue');
 const resultEl = document.getElementById('result');
 const taxTableEl = document.getElementById('taxTable');
-const jsonOutEl = document.getElementById('jsonOut');
 
 const DEBUG = true;
 
@@ -306,41 +307,23 @@ async function loadEngineCapacities() {
 }
 
 function toRows(vehicle) {
-  const preferredOrder = [
-    'make',
-    'model',
-    'bodyType',
-    'yom',
-    'country',
-    'fuelType',
-    'engineCapacity',
-    'cifInUSD',
-    'importDutyInUSD',
-    'exiseDutyInUSD',
-    'exiseDutyDueToAgeInUSD',
-    'vatInUSD',
-    'customProcessingFeeInUSD',
-    'railwayDevLevyInUSD',
-    'indDevLevy',
-    'hivRespLevy',
-    'totalImportTaxesInUSD',
-    'totalImportTaxesInTZS',
-    'vehicleRegistrationFeeInTZS',
-    'totalTaxesInTZS',
-    'year',
-    'quarter',
-    'referenceNumber',
+  const rows = [
+    ['Make', vehicle && vehicle.make],
+    ['Model', vehicle && (vehicle.model || vehicle.modelBody)],
+    ['Body Type', vehicle && vehicle.bodyType],
+    ['Year of Manufacture', vehicle && (vehicle.yom || vehicle.year)],
+    ['Country of Origin', vehicle && vehicle.country],
+    ['Fuel Type', vehicle && vehicle.fuelType],
+    ['Engine Capacity', vehicle && vehicle.engineCapacity],
+    ['CIF (USD)', vehicle && vehicle.cifInUSD],
+    ['Total Import Taxes (TZS)', vehicle && vehicle.totalImportTaxesInTZS],
+    ['Registration Fee (TZS)', vehicle && vehicle.vehicleRegistrationFeeInTZS],
+    ['TRA Year', vehicle && vehicle.year],
+    ['TRA Quarter', vehicle && vehicle.quarter],
+    ['Reference Number', vehicle && vehicle.referenceNumber],
   ];
 
-  const entries = Object.entries(vehicle || {});
-  const orderIndex = new Map(preferredOrder.map((k, i) => [k, i]));
-  entries.sort((a, b) => {
-    const ai = orderIndex.has(a[0]) ? orderIndex.get(a[0]) : 9999;
-    const bi = orderIndex.has(b[0]) ? orderIndex.get(b[0]) : 9999;
-    if (ai !== bi) return ai - bi;
-    return a[0].localeCompare(b[0]);
-  });
-  return entries;
+  return rows.filter((r) => r[1] !== null && r[1] !== undefined && String(r[1]) !== '');
 }
 
 function renderVehicle(vehicle) {
@@ -349,7 +332,6 @@ function renderVehicle(vehicle) {
     const tr = document.createElement('tr');
     const tdK = document.createElement('td');
     tdK.textContent = k;
-    tdK.className = 'mono';
     const tdV = document.createElement('td');
     tdV.textContent = v === null || v === undefined ? '' : String(v);
     tr.appendChild(tdK);
@@ -360,7 +342,8 @@ function renderVehicle(vehicle) {
 
 function clearResult() {
   resultEl.style.display = 'none';
-  jsonOutEl.value = '';
+  totalEl.style.display = 'none';
+  totalValueEl.textContent = '';
 }
 
 function resetDependents() {
@@ -405,8 +388,16 @@ async function calculate() {
   const vehicle = Array.isArray(data) ? data[0] : data;
   dbg('calculate:result', vehicle);
   renderVehicle(vehicle);
-  jsonOutEl.value = JSON.stringify(vehicle, null, 2);
   resultEl.style.display = 'block';
+  const total =
+    (vehicle && vehicle.totalTaxesInTZS) ||
+    (vehicle && vehicle.totalAmount) ||
+    (vehicle && vehicle.totalAmountInTZS) ||
+    null;
+  if (total !== null && total !== undefined && String(total) !== '') {
+    totalValueEl.textContent = String(total);
+    totalEl.style.display = 'block';
+  }
   setStatus('Done.');
 }
 
