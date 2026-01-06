@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TRA Vehicle Tax</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        margin: 0;
+        padding: 12px;
+        background: #f6f7f9;
+        color: #1a1a1a;
+        width: 420px;
+        box-sizing: border-box;
+      }
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 16px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      label {
+        display: block;
+        font-size: 11px;
+        color: #4a4a4a;
+        margin-bottom: 4px;
+      }
+      select,
+      button,
+      textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #cfd6e4;
+        background: #fff;
+        font-size: 13px;
+      }
+      button {
+        cursor: pointer;
+        background: #0b5fff;
+        border-color: #0b5fff;
+        color: #fff;
+        font-weight: 600;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+      }
+      .row > div {
+        flex: 1;
+      }
+      .status {
+        margin-top: 8px;
+        font-size: 11px;
+        color: #5a5a5a;
+        min-height: 14px;
+      }
+      .error {
+        color: #b00020;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      th,
+      td {
+        border-bottom: 1px solid #eef1f7;
+        padding: 6px;
+        text-align: left;
+        font-size: 11px;
+        vertical-align: top;
+      }
+      th {
+        font-size: 10px;
+        color: #4a4a4a;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+      }
+      textarea {
+        height: 140px;
+        resize: vertical;
+        margin-top: 8px;
+      }
+      @media (max-width: 460px) {
+        body {
+          width: 360px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>TRA Vehicle Tax (UMVVS)</h1>
+
+      <div class="grid">
+        <div>
+          <label for="make">Make</label>
+          <select id="make"></select>
+        </div>
+
+        <div>
+          <label for="modelFilter">Model/Body filter</label>
+          <select id="modelFilter"></select>
+        </div>
+
+        <div>
+          <label for="modelBody">Model / Body</label>
+          <select id="modelBody"></select>
+        </div>
+
+        <div>
+          <label for="yom">Year of manufacture</label>
+          <select id="yom"></select>
+        </div>
+
+        <div>
+          <label for="country">Country of origin</label>
+          <select id="country"></select>
+        </div>
+
+        <div>
+          <label for="fuel">Fuel type</label>
+          <select id="fuel"></select>
+        </div>
+
+        <div>
+          <label for="engine">Engine capacity</label>
+          <select id="engine"></select>
+        </div>
+
+        <div class="row">
+          <div>
+            <button id="calculate">Calculate</button>
+          </div>
+          <div>
+            <button id="reset" type="button" style="background:#fff;color:#0b5fff;border-color:#0b5fff;">
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <div id="result" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody id="taxTable"></tbody>
+        </table>
+
+        <textarea id="jsonOut" class="mono" readonly></textarea>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

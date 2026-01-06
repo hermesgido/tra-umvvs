@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "TRA Vehicle Tax Calculator (UMVVS)",
+  "version": "1.0.0",
+  "description": "Calculate motor vehicle taxes in Tanzania using TRA UMVVS endpoints.",
+  "host_permissions": [
+    "https://taxpayerportal.tra.go.tz/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TRA Vehicle Tax"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
+}
