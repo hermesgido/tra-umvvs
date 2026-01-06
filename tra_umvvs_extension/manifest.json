@@ -3,6 +3,9 @@
   "name": "TRA Vehicle Tax Calculator (UMVVS)",
   "version": "1.0.0",
   "description": "Calculate motor vehicle taxes in Tanzania using TRA UMVVS endpoints.",
+  "permissions": [
+    "tabs"
+  ],
   "host_permissions": [
     "https://www.beforward.jp/*",
     "https://beforward.jp/*",

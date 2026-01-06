@@ -90,29 +90,80 @@ function findFirstValue(map, keys) {
   return null;
 }
 
-function guessVehicleFromPage() {
-  const map = buildFieldMap();
-  const title = normalizeText(document.querySelector('meta[property="og:title"]')?.getAttribute('content') || document.title);
-  const rawMake =
-    findFirstValue(map, ['make', 'manufacturer', 'brand']) ||
-    (title.split(' ').length ? title.split(' ')[0] : null);
-  const rawModel = findFirstValue(map, ['model', 'vehicle model', 'car model']) || title;
-  const rawYear =
-    findFirstValue(map, ['year', 'year of manufacture', 'manufacture year', 'model year']) || title;
-  const rawFuel = findFirstValue(map, ['fuel', 'fuel type']) || '';
-  const rawEngine = findFirstValue(map, ['engine', 'engine capacity', 'engine cc']) || '';
-  const rawCountry = findFirstValue(map, ['country of origin', 'origin']) || '';
+function getSpecValue(label) {
+  const rows = document.querySelectorAll('table.specification tr');
+  for (const row of rows) {
+    const cells = Array.from(row.children);
+    for (let i = 0; i < cells.length - 1; i++) {
+      const cell = cells[i];
+      const next = cells[i + 1];
+      if (cell.tagName === 'TH' && normalizeText(cell.innerText).startsWith(label) && next.tagName === 'TD') {
+        return normalizeText(next.innerText);
+      }
+    }
+  }
+  return null;
+}
 
-  const year = parseIntFromText(rawYear);
-  const engineCc = parseEngineCc(rawEngine) || parseEngineCc(title);
+function getBreadcrumbValues() {
+  const crumbs = Array.from(document.querySelectorAll('#bread li a')).map((a) => normalizeText(a.innerText));
+  return {
+    carMake: crumbs[1] || null,
+    bodyType: crumbs[2] || null,
+    carModel: crumbs[3] || null,
+    year: crumbs[4] || null,
+  };
+}
+
+function getChassisModelCode() {
+  const chassis = getSpecValue('Chassis No.') || getSpecValue('Chassis No');
+  if (!chassis) return null;
+  return String(chassis).split('-')[0].trim() || null;
+}
+
+function guessVehicleFromPage() {
+  const title = normalizeText(document.querySelector('meta[property="og:title"]')?.getAttribute('content') || document.title);
+  const breadcrumb = getBreadcrumbValues();
+  const modelCode = getChassisModelCode();
+
+  const specYear =
+    getSpecValue('Registration Year/month') ||
+    getSpecValue('Manufacture Year/month') ||
+    getSpecValue('Year') ||
+    getSpecValue('Year of manufacture');
+  const specFuel = getSpecValue('Fuel') || getSpecValue('Fuel Type');
+  const specEngine =
+    getSpecValue('Engine Size') ||
+    getSpecValue('Steering Right Engine Size') ||
+    getSpecValue('Steering Left Engine Size') ||
+    getSpecValue('Engine');
+
+  const makeGuess = breadcrumb.carMake;
+  const yearGuess = breadcrumb.year || specYear;
+  const year = parseIntFromText(yearGuess);
+  const engineCc = parseEngineCc(specEngine) || parseEngineCc(title);
+
+  const modelBody =
+    breadcrumb.carModel && modelCode && breadcrumb.bodyType
+      ? `${String(breadcrumb.carModel).toUpperCase()} - ${String(modelCode).toUpperCase()} - ${String(
+          breadcrumb.bodyType
+        ).toUpperCase()}`
+      : null;
+
+  const map = buildFieldMap();
+  const makeFallback =
+    findFirstValue(map, ['make', 'manufacturer', 'brand']) || (title.split(' ').length ? title.split(' ')[0] : null);
+  const modelFallback = findFirstValue(map, ['model', 'vehicle model', 'car model']) || title;
+  const fuelFallback = findFirstValue(map, ['fuel', 'fuel type']) || '';
+  const countryFallback = findFirstValue(map, ['country of origin', 'origin']) || '';
 
   return {
-    makeGuess: rawMake ? normalizeText(rawMake) : null,
-    modelGuess: rawModel ? normalizeText(rawModel) : null,
+    makeGuess: makeGuess ? normalizeText(makeGuess) : makeFallback ? normalizeText(makeFallback) : null,
+    modelGuess: modelBody ? normalizeText(modelBody) : breadcrumb.carModel ? normalizeText(breadcrumb.carModel) : normalizeText(modelFallback),
     year,
-    fuelGuess: normalizeText(rawFuel),
+    fuelGuess: normalizeText(specFuel || fuelFallback),
     engineCc,
-    countryGuess: normalizeText(rawCountry),
+    countryGuess: normalizeText(countryFallback || 'JAPAN'),
     title,
   };
 }
@@ -122,6 +173,9 @@ function isLikelyCarDetailsPage() {
   if (url.includes('/stock/')) return true;
   if (url.includes('stock=')) return true;
   if (url.includes('/car/')) return true;
+  if (url.includes('/id/')) return true;
+  if (document.querySelector('table.specification')) return true;
+  if (document.querySelector('#bread')) return true;
   const t = document.title.toLowerCase();
   if (t.includes('beforward') && (t.includes('stock') || t.includes('toyota') || t.includes('nissan'))) return true;
   return false;
@@ -376,3 +430,33 @@ async function runAuto() {
 }
 
 runAuto();
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (!message || message.type !== 'getVehicleGuess') return;
+  try {
+    try {
+      const ts = new Date().toISOString();
+      console.log(`[TRA UMVVS][content][${ts}] getVehicleGuess`, { url: location.href });
+    } catch {}
+    if (!isLikelyCarDetailsPage()) {
+      try {
+        const ts = new Date().toISOString();
+        console.log(`[TRA UMVVS][content][${ts}] getVehicleGuess:notDetails`);
+      } catch {}
+      sendResponse({ ok: false, error: 'Not a vehicle details page' });
+      return;
+    }
+    const guess = guessVehicleFromPage();
+    try {
+      const ts = new Date().toISOString();
+      console.log(`[TRA UMVVS][content][${ts}] getVehicleGuess:ok`, guess);
+    } catch {}
+    sendResponse({ ok: true, guess });
+  } catch (e) {
+    try {
+      const ts = new Date().toISOString();
+      console.log(`[TRA UMVVS][content][${ts}] getVehicleGuess:error`, String(e && e.message ? e.message : e));
+    } catch {}
+    sendResponse({ ok: false, error: String(e && e.message ? e.message : e) });
+  }
+});
